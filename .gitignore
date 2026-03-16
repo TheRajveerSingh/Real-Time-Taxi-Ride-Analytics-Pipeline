@@ -1,0 +1,36 @@
+# Spark checkpoints and runtime data
+checkpoints/
+delta-table/
+spark-warehouse/
+derby.log
+metastore_db/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.venv/
+venv/
+env/
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+
+# Data files (large binaries)
+*.parquet
+*.csv
+*.json.gz
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.idea/
+.vscode/
+*.swp
