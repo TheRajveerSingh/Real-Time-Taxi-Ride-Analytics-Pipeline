@@ -45,7 +45,7 @@ df = spark.readStream \
     .format("kafka") \
     .option("kafka.bootstrap.servers", "localhost:9092") \
     .option("subscribe", "taxi_rides") \
-    .option("startingOffsets", "earliest") \
+    .option("startingOffsets", "latest") \
     .load()
 
 json_df = df.selectExpr("CAST(value AS STRING) AS raw_event") \
@@ -95,18 +95,54 @@ silver_df = silver_df.select(
     to_timestamp("tpep_dropoff_datetime").alias("dropoff_datetime")
 )
 # -------------------- GOLD --------------------
-gold_df = silver_df \
-    .withColumn("pickup_time", to_timestamp("tpep_pickup_datetime")) \
-    .withWatermark("pickup_time", "10 minutes") \
-    .groupBy(window("pickup_time", "1 minute")) \
+from pyspark.sql.functions import when
+
+gold_df = (
+    silver_df
+    .withColumn("pickup_time", col("pickup_datetime"))
+    .withWatermark("pickup_time", "10 minutes")
+    .groupBy(window("pickup_time", "1 minute"))
     .agg(
         avg("fare_amount").alias("avg_fare"),
         avg("trip_distance").alias("avg_trip_distance"),
         count("*").alias("ride_count")
-    ) \
-    .withColumn("agg_time", current_timestamp()) \
-    .withColumn("agg_date", to_date("agg_time")) \
+    )
+    .withColumn(
+        "surge_flag",
+        when(col("ride_count") > 5, "HIGH_DEMAND").otherwise("NORMAL")
+    )
+    .withColumn(
+        "fare_anomaly",
+        when(col("avg_fare") > 100, "ABNORMAL").otherwise("NORMAL")
+    )
+    .withColumn("agg_time", current_timestamp())
+    .withColumn("agg_date", to_date("agg_time"))
+    .withColumn("window_start", col("window.start"))
+    .withColumn("window_end", col("window.end"))
     .drop("window")
+)
+
+hotspot_df = (
+    silver_df
+    .withColumn("pickup_time", col("pickup_datetime"))
+    .withWatermark("pickup_time", "10 minutes")
+    .groupBy(
+        window("pickup_time", "5 minutes"),
+        col("pulocationid")
+    )
+    .agg(
+        count("*").alias("ride_count")
+    )
+    .withColumn(
+        "hotspot_flag",
+        when(col("ride_count") > 10, "HOTSPOT").otherwise("NORMAL")
+    )
+    .withColumn("agg_time", current_timestamp())
+    .withColumn("agg_date", to_date("agg_time"))
+    .withColumn("window_start", col("window.start"))
+    .withColumn("window_end", col("window.end"))
+    .drop("window")
+)
 
 gold_query = gold_df.writeStream \
     .foreachBatch(lambda batch_df, _: batch_df.write
@@ -116,6 +152,17 @@ gold_query = gold_df.writeStream \
         .save()
     ) \
     .option("checkpointLocation", "checkpoints/gold") \
+    .outputMode("update") \
+    .start()
+
+hotspot_query = hotspot_df.writeStream \
+    .foreachBatch(lambda batch_df, _: batch_df.write
+        .format("org.apache.spark.sql.cassandra")
+        .options(table="hotspot_rides", keyspace="taxi_streaming")
+        .mode("append")
+        .save()
+    ) \
+    .option("checkpointLocation", "checkpoints/hotspot") \
     .outputMode("update") \
     .start()
 
