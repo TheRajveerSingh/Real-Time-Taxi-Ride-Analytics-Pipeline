@@ -1,36 +1,19 @@
-# Spark checkpoints and runtime data
+# Spark streaming checkpoints (runtime state, not code)
 checkpoints/
-delta-table/
-spark-warehouse/
-derby.log
-metastore_db/
+
+# Dataset files (too large / not source code)
+data/*.parquet
 
 # Python
 __pycache__/
-*.py[cod]
-*.pyo
-*.egg
-*.egg-info/
-dist/
-build/
-.eggs/
-.venv/
-venv/
-env/
+*.pyc
+.env
 
-# Jupyter Notebooks
-.ipynb_checkpoints/
+# Airflow
+airflow/logs/
+airflow/*.db
+airflow/airflow.cfg
 
-# Data files (large binaries)
-*.parquet
-*.csv
-*.json.gz
-
-# OS
+# OS/editor junk
 .DS_Store
-Thumbs.db
-
-# IDEs
-.idea/
 .vscode/
-*.swp
