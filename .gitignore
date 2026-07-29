@@ -17,3 +17,4 @@ airflow/airflow.cfg
 # OS/editor junk
 .DS_Store
 .vscode/
+.env
