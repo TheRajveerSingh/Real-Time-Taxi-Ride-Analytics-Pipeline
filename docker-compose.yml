@@ -30,6 +30,21 @@ services:
       - CASSANDRA_CLUSTER_NAME=TaxiCluster
     volumes:
       - cassandra_data:/var/lib/cassandra
+    
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: grafana
+    depends_on:
+      - cassandra
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_INSTALL_PLUGINS=hadesarchitect-cassandra-datasource
+    volumes:
+      - grafana_data:/var/lib/grafana
 
 volumes:
   cassandra_data:
+  grafana_data:
