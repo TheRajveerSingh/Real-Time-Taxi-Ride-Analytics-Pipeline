@@ -13,7 +13,7 @@ producer = KafkaProducer(
 df = pd.read_parquet('data/yellow_tripdata_2025-01.parquet')
 
 # Limit rows for testing
-df = df.head(250)
+df = df.head(1000)
 
 topic = "taxi_rides"
 
