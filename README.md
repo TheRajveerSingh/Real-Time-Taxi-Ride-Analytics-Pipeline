@@ -30,6 +30,8 @@ Apache Spark Structured Streaming
               └── Hotspot Detection (location-based)
      ↓
 Grafana Dashboards (real-time visualization)
+     ↓
+Apache Airflow (Orchestration)
 ```
 
 ## Features
