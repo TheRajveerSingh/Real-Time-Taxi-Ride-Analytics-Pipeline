@@ -231,6 +231,28 @@ The `Taxi Streaming Analytics` dashboard includes:
 
 > **Note:** Panels filter on `agg_date` (the date the pipeline *processed* the record, not the ride's original date). Update this value in each panel's query when running the pipeline on a new day.
 
+## Project Screenshots
+
+### Docker Containers
+
+![Docker Desktop showing the running taxistream container group](Snippets/Docker.png)
+
+This Docker Desktop view shows the `taxistream` Docker Compose group, which contains the project's infrastructure services (Zookeeper, Kafka, Cassandra, and Grafana):
+- **Status** — the green dot indicates that the group is running
+- **CPU usage** — total container CPU usage is 18.25% out of 1600% (16 CPUs available), of which `taxistream` accounts for 17.61%
+- **Memory usage** — total container memory usage is 3.72GB, of which `taxistream` accounts for 3.71GB
+
+### Grafana Dashboard
+
+![Taxi Streaming Analytics dashboard in Grafana](Snippets/Grafana.png)
+
+This is the `Taxi Streaming Analytics` dashboard, displaying pipeline results over the last 24 hours:
+- **Average Fare Trend** — how the average fare (`avg_fare`) per window changes over time
+- **Ride Count Per Minute** — how the ride volume (`ride_count`) changes over time
+- **Surge Events (High Demand)** — the entry shown has 6 rides and is flagged `HIGH_DEMAND`, as it crosses the surge threshold of more than 5 rides
+- **Pickup Hotspots** — the entry shown is pickup location 137 with 2 rides, flagged `NORMAL`, as it is below the hotspot threshold
+- **Dead Letter Queue — Rejected Records** — the entry shown is a rejected ride with its ID, rejection time, and reason (`invalid_fare`)
+
 ## Configuration
 
 ### Producer (`producer/producer.py`)
